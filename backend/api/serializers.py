@@ -21,7 +21,7 @@ class NoteSerializer(serializers.ModelSerializer):
 class RequestForPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequestForPayment
-        fields = ['id', 'requestBy', 'payableTo', 'description', 'dateRequested', 'dateNeeded',
+        fields = ['id', 'requestedBy', 'payableTo', 'description', 'dateRequested', 'dateNeeded',
                   'bankName', 'accountName', 'accountNumber', 'swiftCode', 'contactPerson', 'contactNumber', 'email',
                   'termsOfPayment', 'pr', 'po', 'rr', 'tin', 'payeeAddress',
                   'currency', 'amount', 'serviceFee', 'lessEWT', 'netTotal', 'instructions',
