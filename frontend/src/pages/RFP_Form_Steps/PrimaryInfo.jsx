@@ -6,6 +6,7 @@ import { ChevronDownIcon } from "lucide-react"
 
 //shadcn
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import {
   Field,
   FieldDescription,
@@ -33,7 +34,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Calendar } from "@/components/ui/calendar"
 import {
   Popover,
   PopoverContent,
@@ -81,7 +81,7 @@ function PrimaryInfo({setPage,formData,setFormData}) {
     
     return (
         <div class='flex flex-row justify-center backdrop-blur-md bg-white/10'>
-            <div class=' w-[90%] max-w-6xl'>
+            <div class='space-y-3 w-[90%] max-w-6xl'>
                 <Card>
                     <CardHeader>
                         <CardTitle class='text-[20px] font-bold'>Request Details</CardTitle>

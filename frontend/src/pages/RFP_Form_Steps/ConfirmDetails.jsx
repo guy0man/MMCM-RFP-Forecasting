@@ -6,24 +6,9 @@ import { ChevronDownIcon } from "lucide-react"
 
 //shadcn
 import { Button } from "@/components/ui/button"
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSeparator,
-  FieldSet,
-} from "@/components/ui/field"
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { Progress } from "@/components/ui/progress"
+import { Separator } from "@/components/ui/separator"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Card,
   CardAction,
@@ -33,7 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
 
 function ConfirmDetails({setPage, formData,setFormData}) {
 
@@ -51,10 +35,21 @@ function ConfirmDetails({setPage, formData,setFormData}) {
                     <CardHeader>
                         <CardTitle class='text-[20px] font-bold'>Confirm Details</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableBody></TableBody>
-                        </Table>                 
+                    <CardContent className="space-y-2">
+                        <ScrollArea className="h-64"> {/* set the scrollable height */}
+                            <div className="pr-4 space-y-2">
+                            {Object.entries(formData).map(([key, value]) => (
+                                <div key={key} className="flex items-start justify-between gap-4 border-b border-border/50 py-2">
+                                <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                                    {key.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase())}
+                                </span>
+                                <span className="text-sm font-medium break-words text-right">
+                                    {value == null || value === "" ? "—" : String(value)}
+                                </span>
+                                </div>
+                            ))}
+                            </div>
+                        </ScrollArea>
                     </CardContent>
                     <CardFooter class="flex flex-col items-center gap-5 mt-5">
                         <Progress value={progress} className='w-[60%]'/>          
@@ -73,7 +68,7 @@ function ConfirmDetails({setPage, formData,setFormData}) {
                                     setPage((currPage) => currPage + 1)
                                 }}
                             >
-                                Next
+                                Submit
                             </Button>
                         </div>
                     </CardFooter>

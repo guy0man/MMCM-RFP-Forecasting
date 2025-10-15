@@ -39,7 +39,7 @@ function Request_Form() {
         tin:"",
         payeeAddress:"",
 
-        currency:0,
+        currency:"",
         amount:0,
         serviceFee:0,
         lessEWT:0,

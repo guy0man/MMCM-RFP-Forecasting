@@ -47,7 +47,7 @@ function PaymentInfo({setPage,formData,setFormData}) {
   const [typesOfBusinesses,setTypesOfBusinesses] = useState([]);  
   const [progress, setProgress] = React.useState(25)
   
-  React.useEffect(() => {
+  useEffect(() => {
       const timer = setTimeout(() => setProgress(50), 500)
       return () => clearTimeout(timer)
   }, [])
@@ -55,6 +55,7 @@ function PaymentInfo({setPage,formData,setFormData}) {
   useEffect(() => {
     getModesOfPayment()
     getTypesOfBusinesses()
+    getTaxRegistrations()
   }, []);
 
   const getModesOfPayment = () => {
@@ -71,12 +72,26 @@ function PaymentInfo({setPage,formData,setFormData}) {
     .catch((err) => alert(err));
   };
 
+  const getTaxRegistrations = () => {
+  api.get("/api/tax-registrations/")      // adjust to your endpoint
+    .then(res => res.data)
+    .then(setTaxRegistrations)
+    .catch(err => alert(err));
+  };
+
+  const toNum = (v) => {
+  const n = parseFloat(String(v ?? "").replace(/,/g, ""));
+  return Number.isFinite(n) ? n : 0;
+  };
+
+  const netTotal = toNum(formData.amount) - toNum(formData.lessEWT) + toNum(formData.serviceFee);
+
   return (
     <div class='flex flex-row justify-center backdrop-blur-md bg-white/10'>
       <div class='w-[90%] max-w-6xl'>
         <Card>
           <CardHeader>
-            <CardTitle class='text-[20px] font-bold'>Payment Schedule</CardTitle>
+            <CardTitle class='text-[20px] font-bold'>Payment Info</CardTitle>
           </CardHeader>
           <CardContent>
             <FieldSet>
@@ -176,15 +191,27 @@ function PaymentInfo({setPage,formData,setFormData}) {
                   </Field> 
                   <Field>
                     <FieldLabel>Amount</FieldLabel>
-                    <Input placeholder="Enter Amount" value={formData.amount} onChange={(event) => setFormData({...formData, amount: event.target.value})}/>
+                    <Input placeholder="Enter Amount" inputMode='decimal' value={formData.amount} onChange={(event) => setFormData({...formData, amount: event.target.value})}/>
+                  </Field> 
+                  <Field>
+                    <FieldLabel>Service Fee</FieldLabel>
+                    <Input placeholder="Enter Service Fee" inputMode='decimal' value={formData.serviceFee} onChange={(event) => setFormData({...formData, serviceFee: event.target.value})}/>
                   </Field> 
                   <Field>
                     <FieldLabel>Less: EWT</FieldLabel>
-                    <Input placeholder="Enter Withholding Tax" value={formData.lessEWT} onChange={(event) => setFormData({...formData, lessEWT: event.target.value})}/>
+                    <Input placeholder="Enter Withholding Tax" inputMode='decimal' value={formData.lessEWT} onChange={(event) => setFormData({...formData, lessEWT: event.target.value})}/>
                   </Field>
                   <Field>
                     <FieldLabel>Net Total Amount</FieldLabel>
-                    <Input readOnly className='focus:ring-0 focus:outline-none focus-visible:ring-0 focus:border-transparent'/>
+                    <Input 
+                      readOnly
+                       className={`focus:ring-0 focus:outline-none focus-visible:ring-0 focus:border-transparent ${ netTotal < 0 ? "text-red-600" : ""}`}
+                      value={
+                      Number.isFinite(netTotal)
+                        ? netTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                        : ""
+                      }
+                    />
                   </Field>
                 </div>         
               </div>                          
