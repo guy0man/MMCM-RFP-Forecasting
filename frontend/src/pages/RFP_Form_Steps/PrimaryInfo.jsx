@@ -1,20 +1,17 @@
-import {use, useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
-import React from 'react';
+import {useEffect, useState} from 'react';
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import api from "../../api";
 import { ChevronDownIcon } from "lucide-react"
+import { z } from "zod";
 
 //shadcn
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
-  FieldLegend,
-  FieldSeparator,
-  FieldSet,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import {
@@ -27,9 +24,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -41,6 +36,23 @@ import {
 } from "@/components/ui/popover"
 import { Progress } from "@/components/ui/progress"
 
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const schema = z.object({
+    requestedBy: z.string().min(3, "Requester must be at least 3 characters"),
+    department: z.coerce.number().min(1),
+    payableTo: z.string().min(3,"payee must be at least 3 characters"),
+    description: z.string().nonempty("Description is required"),
+    sourceOfFund: z.coerce.number().min(1),
+    dateNeeded: z.date({ required_error: "Date is required" }).refine(d => {
+        const t = new Date(); t.setHours(0,0,0,0);
+        const dd = new Date(d); dd.setHours(0,0,0,0);
+        return dd >= t;
+    }, "Date must be today or later"),
+    transactionType: z.coerce.number().min(1)
+})
+
 function PrimaryInfo({setPage,formData,setFormData}) {
 
     //lists
@@ -49,7 +61,33 @@ function PrimaryInfo({setPage,formData,setFormData}) {
     const [transactionTypes,setTransactionTypes] = useState([]);  
     const dateObj = formData.dateNeeded ? new Date(formData.dateNeeded) : undefined; 
 
-    const [open,setOpen] = useState(false);  
+    const [open,setOpen] = useState(false);
+    
+    const initialDate =
+    typeof formData.dateNeeded === "string" && formData.dateNeeded
+      ? new Date(formData.dateNeeded.replace(/-/g, "/")) // safer parse for "YYYY-MM-DD"
+      : formData.dateNeeded instanceof Date
+      ? formData.dateNeeded
+      : undefined;
+
+    const {
+        register,
+        control,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({
+        resolver: zodResolver(schema),
+        defaultValues: {
+            // seed RHF with any existing state
+            requestedBy: formData.requestedBy ?? "",
+            department: formData.department ?? "",
+            payableTo: formData.payableTo ?? "",
+            description: formData.description ?? "",
+            sourceOfFund: formData.sourceOfFund ?? "",
+            dateNeeded: initialDate ?? undefined,
+            transactionType: formData.transactionType ?? "",
+        },
+    });
 
     useEffect(() => {
         getDepartments();
@@ -77,11 +115,31 @@ function PrimaryInfo({setPage,formData,setFormData}) {
         .then((data) => {setTransactionTypes(data); console.log(data) })
         .catch((err) => alert(err));
     };
+
+    const onValid = (data) => {
+        const fmt = (d) =>
+            `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+                d.getDate()
+            ).padStart(2, "0")}`;
+
+        setFormData((prev) => ({
+            ...prev,
+            ...data,
+            // store string for API or parent if you prefer:
+            dateNeeded: fmt(data.dateNeeded),
+        }));
+        setPage((p) => p + 1);
+    };
+
+    const onInvalid = (errs) => {
+        // optional: focus first error, toast, etc.
+        console.warn("Validation errors:", errs);
+    };
     
     
     return (
         <div class='flex flex-row justify-center backdrop-blur-md bg-white/10'>
-            <div class='space-y-3 w-[90%] max-w-6xl'>
+            <form onSubmit={handleSubmit(onValid, onInvalid)} class='space-y-3 w-[90%] max-w-6xl'>
                 <Card>
                     <CardHeader>
                         <CardTitle class='text-[20px] font-bold'>Request Details</CardTitle>
@@ -90,123 +148,161 @@ function PrimaryInfo({setPage,formData,setFormData}) {
                         <FieldGroup>
                             <Field>
                                 <FieldLabel>Requested By</FieldLabel>
-                                <Input 
+                                <Input
+                                    {...register("requestedBy")} 
                                     id="requestedBy" 
                                     placeholder="Name of Requestor" 
-                                    value={formData.requestedBy ?? ""} 
-                                    onChange={(event) => 
-                                        setFormData({...formData, requestedBy: event.target.value})
-                                    }
+                                    className={errors.requestedBy ? "border-red-500" : ""}
                                 />
+                                {errors.requestedBy && (
+                                    <p className="text-red-500 text-sm mt-1">{errors.requestedBy.message}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel>Department</FieldLabel>
-                                <Select
-                                    value={formData.department ?? ""}
-                                    onValueChange={(value) =>
-                                        setFormData({...formData, department: value})
-                                    }
-                                >
-                                    <SelectTrigger className="w-[180px]">
+                                <Controller
+                                    name="department"
+                                    control={control}
+                                    render={({ field }) => (
+                                    <Select
+                                        value={String(field.value ?? "")}
+                                        onValueChange={field.onChange}
+                                    >
+                                        <SelectTrigger className={`w-[180px] ${errors.department ? "border-red-500" : ""}`}>
                                         <SelectValue placeholder="Select Department" />
-                                    </SelectTrigger>
-                                    <SelectContent>
+                                        </SelectTrigger>
+                                        <SelectContent>
                                         {departments.map((dept) => (
                                             <SelectItem key={dept.id} value={dept.id.toString()}>
-                                                {dept.name}
+                                            {dept.name}
                                             </SelectItem>
                                         ))}
-                                    </SelectContent>
-                                </Select>
+                                        </SelectContent>
+                                    </Select>
+                                    )}
+                                />
                             </Field>
                             <Field>
                                 <FieldLabel>Payable To</FieldLabel>
                                 <Input 
+                                    {...register("payableTo")} 
                                     id="payableTo" 
                                     placeholder="Name of Payee" 
-                                    value={formData.payableTo ?? ""} 
-                                    onChange={(event) => 
-                                    setFormData({...formData, payableTo: event.target.value})
-                                    }
+                                    className={errors.payableTo ? "border-red-500" : ""}
                                 />
+                                {errors.payableTo && (
+                                    <p className="text-red-500 text-sm mt-1">{errors.payableTo.message}</p>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel>Description</FieldLabel>
-                                <Textarea 
+                                <Textarea
+                                    {...register("description")}  
                                     id="description" 
                                     placeholder="Brief Description of Payment" 
-                                    value={formData.description ?? ""} 
-                                    onChange={(event) => 
-                                        setFormData({...formData, description: event.target.value})
-                                    }
+                                    className={errors.description ? "border-red-500" : ""}
                                 />
+                                {errors.description && (
+                                    <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
+                                )}
                             </Field>
                             <div class='grid grid-cols-2 gap-4'>
                                 <Field>
                                     <FieldLabel>Source of Fund</FieldLabel>
-                                    <Select 
-                                        value={formData.sourceOfFund ?? ""}
-                                        onValueChange={(value) =>
-                                            setFormData({...formData, sourceOfFund: value})
-                                        }
-                                    >
-                                        <SelectTrigger>
+                                    <Controller
+                                        name="sourceOfFund"
+                                        control={control}
+                                        render={({ field }) => (
+                                        <Select
+                                            value={String(field.value ?? "")}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className={errors.sourceOfFund ? "border-red-500" : ""}>
                                             <SelectValue placeholder="Select Source of Fund" />
-                                        </SelectTrigger>
-                                        <SelectContent>
+                                            </SelectTrigger>
+                                            <SelectContent>
                                             {sourcesOfFunds.map((sof) => (
                                                 <SelectItem key={sof.id} value={sof.id.toString()}>
-                                                    {sof.name}
+                                                {sof.name}
                                                 </SelectItem>
                                             ))}
-                                        </SelectContent>
-                                    </Select>
+                                            </SelectContent>
+                                        </Select>
+                                        )}
+                                    />
                                 </Field>  
                                 <Field>
                                     <FieldLabel>Date Needed</FieldLabel>
-                                    <Popover open={open} onOpenChange={setOpen}>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                id="dateNeeded"
-                                                className="w-48 justify-between font-normal"
-                                            >
-                                                {dateObj ? dateObj.toLocaleDateString() : "Select date"}
-                                                <ChevronDownIcon />
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-                                            <Calendar
-                                                mode="single"
-                                                selected={dateObj}
-                                                captionLayout="dropdown"
-                                                onSelect={(date) => {
-                                                    setFormData({...formData, dateNeeded: date ? date.toISOString().split("T")[0] : ""})
-                                                    setOpen(false)
-                                                }}
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                </Field>  
+                                    <Controller
+                                        name="dateNeeded"
+                                        control={control}
+                                        render={({ field }) => {
+                                        const dateObj = field.value ?? undefined; // Date | undefined
+                                        return (
+                                            <>
+                                            <Popover open={open} onOpenChange={setOpen}>
+                                                <PopoverTrigger asChild>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    id="dateNeeded"
+                                                    className={`w-48 justify-between font-normal ${
+                                                    errors.dateNeeded ? "border-red-500" : ""
+                                                    }`}
+                                                >
+                                                    {dateObj ? dateObj.toLocaleDateString() : "Select date"}
+                                                    <ChevronDownIcon />
+                                                </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={dateObj}
+                                                    captionLayout="dropdown"
+                                                    fromDate={today}  
+                                                    disabled={(date) => date < today}              
+                                                    onSelect={(date) => {
+                                                        if (!date) return;
+                                                        const dd = new Date(date);
+                                                        dd.setHours(0, 0, 0, 0);
+                                                        if (dd < today) return;
+                                                        field.onChange(dd);           
+                                                        setOpen(false);
+                                                    }}
+                                                />
+                                                </PopoverContent>
+                                            </Popover>
+                                            {errors.dateNeeded && (
+                                                <p className="text-red-500 text-sm mt-1">{errors.dateNeeded.message}</p>
+                                            )}
+                                            </>
+                                        );
+                                        }}
+                                    />
+                                    </Field> 
                                 <Field>
                                     <FieldLabel>Transaction Type</FieldLabel>
-                                    <Select 
-                                        value={formData.transactionType ?? ""}
-                                        onValueChange={(value) =>
-                                            setFormData({...formData, transactionType: value})
-                                        }
-                                    >
-                                        <SelectTrigger>
+                                    <Controller
+                                        name="transactionType"
+                                        control={control}
+                                        render={({ field }) => (
+                                        <Select
+                                            value={String(field.value ?? "")}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className={errors.transactionType ? "border-red-500" : ""}>
                                             <SelectValue placeholder="Select Transaction Type" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {transactionTypes.map((trans) => (
-                                                <SelectItem key={trans.id} value={trans.id.toString()}>
-                                                    {trans.name}
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                            {transactionTypes.map((t) => (
+                                                <SelectItem key={t.id} value={t.id.toString()}>
+                                                {t.name}
                                                 </SelectItem>
                                             ))}
-                                        </SelectContent>
-                                    </Select>
+                                            </SelectContent>
+                                        </Select>
+                                        )}
+                                    />
                                 </Field>                                                                
                             </div>
                         </FieldGroup>            
@@ -223,18 +319,14 @@ function PrimaryInfo({setPage,formData,setFormData}) {
                             >
                                 Cancel
                             </Button>
-                            <Button className='w-[150px]'
-                                onClick={() => {
-                                    setPage((currPage) => currPage + 1)
-                                }}
-                            >
+                            <Button type="submit" className='w-[150px]'>
                                 Next
                             </Button>
                         </div>
                     </CardFooter>
                 </Card>
 
-            </div>
+            </form>
         </div>
     )
 }

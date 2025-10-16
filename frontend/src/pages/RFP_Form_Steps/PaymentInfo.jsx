@@ -1,18 +1,15 @@
-import {use, useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import { useEffect, useState} from 'react';
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import React from 'react';
 import api from "../../api";
-import { ChevronDownIcon } from "lucide-react"
 
 //shadcn
 import { Button } from "@/components/ui/button"
 import {
   Field,
-  FieldDescription,
-  FieldGroup,
   FieldLabel,
-  FieldLegend,
-  FieldSeparator,
   FieldSet,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -26,37 +23,95 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { Progress } from "@/components/ui/progress"
+
+const schema = z.object({
+  modeOfPayment: z.coerce.number().min(1),
+  tin: z.string().regex(/^\d{3}-?\d{3}-?\d{3}-?\d{0,3}$/, "Invalid TIN format"),
+  payeeAddress: z.string().min(1,"Address is required"),
+  pr: z.string().min(1),
+  po: z.string().min(1),
+  rr: z.string().min(1),
+  taxRegistration: z.string().min(1,"Address is required"),
+  typeOfBusiness: z.string().min(1,"Address is required"),
+  currency:z.string().min(1,"Currency is required"),
+  amount: z.coerce
+    .number({
+      required_error: "Amount is required",
+      invalid_type_error: "Amount must be a number",
+    })
+    .positive("Amount must be greater than 0"),
+  serviceFee: z.union([
+      z.literal(""), 
+      z.coerce.number().positive("Service fee must be greater than 0")
+    ])
+    .optional(),
+  lessEWT: z.union([
+    z.literal(""), 
+    z.coerce.number().positive("Less must be greater than 0")
+  ])
+  .optional(),
+  netTotal:  z.coerce
+    .number({
+      required_error: "Amount is required",
+      invalid_type_error: "Amount must be a number",
+    })
+    .positive("Net Total must be greater than 0"),
+
+})
 
 function PaymentInfo({setPage,formData,setFormData}) {
   const [modesOfPayment,setModesOfPayment] = useState([]);  
   const [taxRegistrations,setTaxRegistrations] = useState([]);  
   const [typesOfBusinesses,setTypesOfBusinesses] = useState([]);  
   const [progress, setProgress] = React.useState(25)
-  
-  useEffect(() => {
-      const timer = setTimeout(() => setProgress(50), 500)
-      return () => clearTimeout(timer)
-  }, [])
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    setValue,
+    } = useForm({
+      resolver: zodResolver(schema),
+      defaultValues: {
+        // seed RHF with any existing state
+        modeOfPayment: formData.modeOfPayment ?? "",
+        tin: formData.tin ?? "",
+        payeeAddress: formData.payeeAddress ?? "",
+        termsOfPayment: formData.termsOfPayment ?? "",
+        pr: formData.pr ?? "",
+        po: formData.po ?? "",
+        rr: formData.rr ?? "",
+        taxRegistration: formData.taxRegistration ?? "",
+        typeOfBusiness: formData.typeOfBusiness ?? "",
+        currency: formData.currency ?? "",
+        amount: formData.amount ?? "",
+        serviceFee: formData.serviceFee ?? "",
+        lessEWT: formData.lessEWT ?? "",
+        netTotal: formData.netTotal ?? "",
+      },
+  });
+
+  const [amount, serviceFee, lessEWT] = watch([
+    "amount",
+    "serviceFee",
+    "lessEWT",
+  ]);
 
   useEffect(() => {
     getModesOfPayment()
     getTypesOfBusinesses()
     getTaxRegistrations()
-  }, []);
+    const net = toNum(amount) - toNum(lessEWT) - toNum(serviceFee);
+    setValue("netTotal", net, { shouldValidate: true, shouldDirty: true });
+  }, [amount, serviceFee, lessEWT, setValue])
 
   const getModesOfPayment = () => {
     api.get("/api/modes-of-payment/")
@@ -80,15 +135,25 @@ function PaymentInfo({setPage,formData,setFormData}) {
   };
 
   const toNum = (v) => {
-  const n = parseFloat(String(v ?? "").replace(/,/g, ""));
-  return Number.isFinite(n) ? n : 0;
+    const n = parseFloat(String(v ?? "").replace(/,/g, ""));
+    return Number.isFinite(n) ? n : 0;
   };
 
-  const netTotal = toNum(formData.amount) - toNum(formData.lessEWT) + toNum(formData.serviceFee);
+  const netTotalVal = watch("netTotal");
+
+  const onValid = (data) => {
+    setFormData((prev) => ({ ...prev, ...data }));
+    setPage((p) => p + 1);
+  };
+
+  const onInvalid = (errs) => {
+    // optional: focus first error, toast, etc.
+    console.warn("Validation errors:", errs);
+  };
 
   return (
     <div class='flex flex-row justify-center backdrop-blur-md bg-white/10'>
-      <div class='w-[90%] max-w-6xl'>
+      <form onSubmit={handleSubmit(onValid, onInvalid)} class='w-[90%] max-w-6xl'>
         <Card>
           <CardHeader>
             <CardTitle class='text-[20px] font-bold'>Payment Info</CardTitle>
@@ -98,120 +163,145 @@ function PaymentInfo({setPage,formData,setFormData}) {
               <div class='grid grid-cols-2 gap-4'>
               <Field>
                 <FieldLabel>Mode Of Payment</FieldLabel>
-                  <Select
-                    value={formData.modeOfPayment ?? ""}
-                    onValueChange={(value) =>
-                      setFormData({...formData, modeOfPayment: value})
-                    }
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select Mode of Payment" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {modesOfPayment.map((mop) => (
-                        <SelectItem key={mop.id} value={mop.id.toString()}>
-                          {mop.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="modeOfPayment"
+                    control={control}
+                    render={({field}) => (
+                      <Select
+                        value={String(field.value ?? "")}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className={`w-[180px] ${errors.modeOfPayment ? "border-red-500" : ""}`}>
+                          <SelectValue placeholder="Select Mode of Payment" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {modesOfPayment.map((mop) => (
+                            <SelectItem key={mop.id} value={mop.id.toString()}>
+                              {mop.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </Field>
                 <Field>
                   <FieldLabel>TIN</FieldLabel>
-                  <Input placeholder="TIN Number" value={formData.tin} onChange={(event) => setFormData({...formData, tin: event.target.value})}/>
+                  <Input {...register("tin")} className={errors.tin ? "border-red-500" : ""} placeholder="TIN Number"/>
                 </Field>
               </div> 
               <Field>
                   <FieldLabel>Payee Address</FieldLabel>
-                  <Input placeholder="Address of the Payee" value={formData.payeeAddress} onChange={(event) => setFormData({...formData, payeeAddress: event.target.value})}/>
+                  <Input {...register("payeeAddress")} className={errors.payeeAddress ? "border-red-500" : ""} placeholder="Address of the Payee"/>
               </Field>  
               <Field>
                 <FieldLabel>Terms of Payment</FieldLabel>
-                <Textarea placeholder="Terms of Payment" value={formData.termsOfPayment} onChange={(event) => setFormData({...formData, termsOfPayment: event.target.value})}/>
+                <Textarea placeholder="Terms of Payment"/>
               </Field>  
               <div class='grid grid-cols-2 gap-4'>
                 <div class='flex flex-col gap-4'>
                   <Field>
                     <FieldLabel>PR</FieldLabel>
-                    <Input placeholder="PR" value={formData.pr} onChange={(event) => setFormData({...formData, pr: event.target.value})}/>
+                    <Input {...register("pr")} className={errors.pr ? "border-red-500" : ""} placeholder="PR"/>
                   </Field>
                   <Field>
                     <FieldLabel>PO</FieldLabel>
-                    <Input placeholder="PO" value={formData.po} onChange={(event) => setFormData({...formData, po: event.target.value})}/>
+                    <Input {...register("po")} className={errors.po? "border-red-500" : ""} placeholder="PO"/>
                   </Field>
                   <Field>
                     <FieldLabel>RR</FieldLabel>
-                    <Input placeholder="RR" value={formData.rr} onChange={(event) => setFormData({...formData, rr: event.target.value})}/>
+                    <Input {...register("rr")} className={errors.rr ? "border-red-500" : ""} placeholder="RR"/>
                   </Field> 
                 </div>  
                 <div class='flex flex-col gap-4'>
                   <Field>
                     <FieldLabel>Tax Registration</FieldLabel>
-                    <Select
-                      value={formData.taxRegistration ?? ""}
-                      onValueChange={(value) =>
-                        setFormData({...formData, taxRegistration: value})
-                      }
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select Tax Registration" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {taxRegistrations.map((tax) => (
-                          <SelectItem key={tax.id} value={tax.id.toString()}>
-                            {tax.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Controller
+                      name="taxRegistration"
+                      control={control}
+                      render={({field}) => (
+                        <Select
+                          value={String(field.value ?? "")}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className={`w-[180px] ${errors.taxRegistration? "border-red-500" : ""}`}>
+                            <SelectValue placeholder="Select Tax Registration" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {taxRegistrations.map((tax) => (
+                              <SelectItem key={tax.id} value={tax.id.toString()}>
+                                {tax.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </Field>
                   <Field>
-                    <FieldLabel>Type of Businesses</FieldLabel>
-                    <Select
-                      value={formData.typeOfBusiness ?? ""}
-                      onValueChange={(value) =>
-                        setFormData({...formData, typeOfBusiness: value})
-                      }
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select Type of Business" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {typesOfBusinesses.map((tob) => (
-                          <SelectItem key={tob.id} value={tob.id.toString()}>
-                            {tob.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FieldLabel>Type of Business</FieldLabel>
+                    <Controller
+                      name="typeOfBusiness"
+                      control={control}
+                      render={({field}) => (
+                        <Select
+                          value={String(field.value ?? "")}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className={`w-[180px] ${errors.typeOfBusiness ? "border-red-500" : ""}`}>
+                            <SelectValue placeholder="Select Type of Business" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {typesOfBusinesses.map((tob) => (
+                              <SelectItem key={tob.id} value={tob.id.toString()}>
+                                {tob.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </Field>
                   <Field>
                     <FieldLabel>Currency</FieldLabel>
-                    <Input placeholder="Choose a Currency" value={formData.currency} onChange={(event) => setFormData({...formData, currency: event.target.value})}/>
+                    <Input {...register("currency")} className={errors.currency ? "border-red-500" : ""} placeholder="Choose a Currency" />
                   </Field> 
                   <Field>
                     <FieldLabel>Amount</FieldLabel>
-                    <Input placeholder="Enter Amount" inputMode='decimal' value={formData.amount} onChange={(event) => setFormData({...formData, amount: event.target.value})}/>
+                    <Input {...register("amount")} className={errors.amount ? "border-red-500" : ""} placeholder="Enter Amount" inputMode='decimal' />
+                    {errors.amount && (
+                      <p className="text-red-500 text-sm mt-1">{errors.amount.message}</p>
+                    )}
                   </Field> 
                   <Field>
                     <FieldLabel>Service Fee</FieldLabel>
-                    <Input placeholder="Enter Service Fee" inputMode='decimal' value={formData.serviceFee} onChange={(event) => setFormData({...formData, serviceFee: event.target.value})}/>
+                    <Input {...register("serviceFee")} className={errors.serviceFee ? "border-red-500" : ""} placeholder="Enter Service Fee" inputMode='decimal'/>
+                    {errors.serviceFee && (
+                      <p className="text-red-500 text-sm mt-1">{errors.serviceFee.message}</p>
+                    )}
                   </Field> 
                   <Field>
                     <FieldLabel>Less: EWT</FieldLabel>
-                    <Input placeholder="Enter Withholding Tax" inputMode='decimal' value={formData.lessEWT} onChange={(event) => setFormData({...formData, lessEWT: event.target.value})}/>
+                    <Input {...register("lessEWT")} className={errors.lessEWT ? "border-red-500" : ""} placeholder="Enter Withholding Tax" inputMode='decimal'/>
+                    {errors.lessEWT && (
+                      <p className="text-red-500 text-sm mt-1">{errors.lessEWT.message}</p>
+                    )}
                   </Field>
                   <Field>
                     <FieldLabel>Net Total Amount</FieldLabel>
                     <Input 
+                      {...register("netTotal")}
                       readOnly
-                       className={`focus:ring-0 focus:outline-none focus-visible:ring-0 focus:border-transparent ${ netTotal < 0 ? "text-red-600" : ""}`}
+                      className={`focus:ring-0 ${Number(netTotalVal) < 0 ? "text-red-600" : ""} ${errors.netTotal ? "border-red-500" : ""}`}
                       value={
-                      Number.isFinite(netTotal)
-                        ? netTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                        : ""
+                        Number.isFinite(Number(netTotalVal))
+                          ? Number(netTotalVal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                          : ""
                       }
                     />
+                    {errors.netTotal && (
+                      <p className="text-red-500 text-sm mt-1">{errors.netTotal.message}</p>
+                    )}
                   </Field>
                 </div>         
               </div>                          
@@ -229,17 +319,13 @@ function PaymentInfo({setPage,formData,setFormData}) {
               >
                 Previous
               </Button>
-              <Button className='w-[150px]'
-                onClick={() => {
-                  setPage((currPage) => currPage + 1)
-                }}
-              >
+              <Button type="submit" className='w-[150px]'>
                 Next
               </Button>
             </div>
           </CardFooter>
         </Card>
-      </div>
+      </form>
     </div>
   )
 }
