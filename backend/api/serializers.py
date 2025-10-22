@@ -1,6 +1,7 @@
+#serializers.py
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Note, RequestForPayment, Department, SourceOfFund, TransactionType, TypeOfBusiness, ModeOfPayment, TaxRegistration
+from .models import Note, RequestForPayment, Department, SourceOfFund, TransactionType, TypeOfBusiness, ModeOfPayment, TaxRegistration, ForecastRun, ForecastResult, DriversMonthly, MacroMonthly, Scenario, ScenarioDeptFactor, ScenarioTxnFactor
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -57,5 +58,64 @@ class TaxRegistrationSerializer(serializers.ModelSerializer):
         model = TaxRegistration
         fields = ['id','name']
 
+class ForecastRunSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ForecastRun
+        fields = ['run_at','model_version','horizon_months','scenario','notes']
 
+class ForecastResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ForecastResult
+        fields = ['run','month','department','transactionType','p10','p50','p90','mean','reconciled','level']
 
+class DriversMonthlySerializer(serializers.ModelSerializer):
+    department_name = serializers.CharField(source="department.name", read_only=True)
+
+    class Meta:
+        model = DriversMonthly
+        fields = [
+            "id",
+            "department",
+            "department_name",
+            "month",
+            "totalNet",
+            "enrolled_FTE_dept",
+            "activeProg_lab_dept",
+            "programLaunches_dept",
+            "capexBudget",
+            "approvalLeadTimeDays",
+            "govFundShare",
+            "mopBankTransferPct",
+        ]
+
+class MacroMonthlySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MacroMonthly
+        fields = [
+            "month", "fxRate_PHP_USD", "inflationPct", "wageIndex",
+            "source", "release_version"
+        ]
+
+class ScenarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Scenario
+        fields = [
+            "id", "scenarioCode", "scenarioName", "horizonMonths",
+            "assumptions", "isActive", "createdAt"
+        ]
+
+class ScenarioDeptFactorSerializer(serializers.ModelSerializer):
+    department_name = serializers.CharField(source="department.name", read_only=True)
+    scenario_code = serializers.CharField(source="scenario.scenarioCode", read_only=True)
+
+    class Meta:
+        model = ScenarioDeptFactor
+        fields = ["id", "scenario", "scenario_code", "department", "department_name", "pct"]
+
+class ScenarioTxnFactorSerializer(serializers.ModelSerializer):
+    transaction_name = serializers.CharField(source="transactionType.name", read_only=True)
+    scenario_code = serializers.CharField(source="scenario.scenarioCode", read_only=True)
+
+    class Meta:
+        model = ScenarioTxnFactor
+        fields = ["id", "scenario", "scenario_code", "transactionType", "transaction_name", "pct"]
