@@ -25,6 +25,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/" element={<Dashboard />}>
           <Route path="home" element={<Home />} />
           <Route path="request" element={<Request_Form />} />

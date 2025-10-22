@@ -21,7 +21,7 @@ class NoteSerializer(serializers.ModelSerializer):
 class RequestForPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequestForPayment
-        fields = ['id', 'requestBy', 'payableTo', 'description', 'dateRequested', 'dateNeeded',
+        fields = ['id', 'requestedBy', 'payableTo', 'description', 'dateRequested', 'dateNeeded',
                   'bankName', 'accountName', 'accountNumber', 'swiftCode', 'contactPerson', 'contactNumber', 'email',
                   'termsOfPayment', 'pr', 'po', 'rr', 'tin', 'payeeAddress',
                   'currency', 'amount', 'serviceFee', 'lessEWT', 'netTotal', 'instructions',
@@ -30,32 +30,32 @@ class RequestForPaymentSerializer(serializers.ModelSerializer):
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
-        fields = ['name','costCenter']
+        fields = ['id','name','costCenter']
 
 class SourceOfFundSerializer(serializers.ModelSerializer):
     class Meta:
         model = SourceOfFund
-        fields = ['name']
+        fields = ['id','name']
 
 class TransactionTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TransactionType
-        fields = ['name']
+        fields = ['id','name']
 
 class TypeOfBusinessSerializer(serializers.ModelSerializer):
     class Meta:
         model = TypeOfBusiness
-        fields = ['name']
+        fields = ['id','name']
 
 class ModeOfPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ModeOfPayment
-        fields = ['name']
+        fields = ['id','name']
 
 class TaxRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaxRegistration
-        fields = ['name']
+        fields = ['id','name']
 
 
 

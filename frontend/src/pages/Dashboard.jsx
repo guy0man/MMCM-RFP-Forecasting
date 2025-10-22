@@ -13,7 +13,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 
-function Home() {
+function Dashboard() {
 
     return (
         <div class='flex flex-col min-h-screen'>
@@ -46,10 +46,10 @@ function Home() {
             </div>
             <Outlet/>
             <footer className="border-t bg-gray-50 px-4 py-4 text-center text-sm text-gray-600">
-                © 2025 MMCM RFP Forecasting
+                © 2025 MMCM
             </footer>
         </div>
     );
 }
 
-export default Home;
+export default Dashboard;
