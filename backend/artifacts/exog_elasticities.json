@@ -1,0 +1,32 @@
+{
+  "0.1": {
+    "intercept": 310831.38,
+    "coef": {
+      "fxRate": 0.0,
+      "inflationPct": 0.0,
+      "wageIndex": 0.0,
+      "enrolled_FTE_dept": 0.0,
+      "programLaunches_dept": 0.0
+    }
+  },
+  "0.5": {
+    "intercept": 352251.5,
+    "coef": {
+      "fxRate": 0.0,
+      "inflationPct": 0.0,
+      "wageIndex": 0.0,
+      "enrolled_FTE_dept": 0.0,
+      "programLaunches_dept": 0.0
+    }
+  },
+  "0.9": {
+    "intercept": 456152.64,
+    "coef": {
+      "fxRate": 0.0,
+      "inflationPct": 0.0,
+      "wageIndex": 0.0,
+      "enrolled_FTE_dept": 0.0,
+      "programLaunches_dept": 0.0
+    }
+  }
+}

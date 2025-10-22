@@ -1,8 +1,7 @@
 
 
 function Home() {
-
-    
+ 
     return (
         <div class="flex flex-col justify-center h-screen w-screen backdrop-blur-md bg-white/10 mx-[5%]">
             <div>

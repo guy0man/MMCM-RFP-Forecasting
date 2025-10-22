@@ -17,7 +17,7 @@ function Dashboard() {
 
     return (
         <div class='flex flex-col min-h-screen'>
-            <div class='flex items-center space-x-6 my-[5px] top-0 left-0 w-[95%] z-50'>
+            <header className='flex items-center space-x-6 my-[5px] top-0 left-0 w-[95%] z-50'>
                 <i className="fa-solid fa-otter text-gray-900 text-2xl mx-[15px]"></i>
                 <NavigationMenu viewport={false} class='w-full'>
                     <NavigationMenuList class='flex justify-center space-x-[15%]'>
@@ -41,12 +41,17 @@ function Dashboard() {
                                 <NavLink to="/forecasting">Forecasting</NavLink>
                             </NavigationMenuLink>          
                         </NavigationMenuItem>
+                        <NavigationMenuItem>
+                            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                                <NavLink to="/university">University</NavLink>
+                            </NavigationMenuLink>          
+                        </NavigationMenuItem>
                     </NavigationMenuList>
                 </NavigationMenu>
             </div>
             <Outlet/>
             <footer className="border-t bg-gray-50 px-4 py-4 text-center text-sm text-gray-600">
-                © 2025 MMCM
+                © 2025 MMCM RFP Forecasting
             </footer>
         </div>
     );
