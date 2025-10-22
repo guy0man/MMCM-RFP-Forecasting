@@ -22,7 +22,7 @@ class Note(models.Model):
 # ==============================
 class RequestForPayment(models.Model):
     id = models.AutoField(primary_key=True)
-    requestBy = models.CharField(max_length=500)
+    requestedBy = models.CharField(max_length=500)
     payableTo = models.CharField(max_length=500)
     description = models.TextField()
     dateRequested = models.DateField(auto_now_add=True)
