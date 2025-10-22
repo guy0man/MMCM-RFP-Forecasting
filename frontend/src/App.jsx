@@ -8,6 +8,7 @@ import Request_Form from './pages/Nav_Tabs/Request_Form';
 import Data_List from './pages/Nav_Tabs/Data_List';
 import Forecasting from './pages/Nav_Tabs/Forecasting';
 import NotFound from './pages/NotFound';
+import University from './pages/Nav_Tabs/University';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function Logout() {
@@ -30,6 +31,7 @@ function App() {
           <Route path="request" element={<Request_Form />} />
           <Route path="datalist" element={<Data_List />} />
           <Route path="forecasting" element={<Forecasting />} />
+          <Route path="university" element={<University />} />
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<RegisterAndLogout />} />

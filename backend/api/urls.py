@@ -11,4 +11,5 @@ urlpatterns = [
     path('types-of-business/', views.TypeOfBusinessListCreateView.as_view(), name='type-of-business-list-create'),
     path('modes-of-payment/', views.ModeOfPaymentListCreateView.as_view(), name='mode-of-payment-list-create'),
     path('tax-registrations/', views.TaxRegistrationListCreateView.as_view(), name='tax-registration-list-create'),
+    path('forecast/next-year/', views.ForecastNextYear.as_view(), name='forecast-next-year'),
 ]
