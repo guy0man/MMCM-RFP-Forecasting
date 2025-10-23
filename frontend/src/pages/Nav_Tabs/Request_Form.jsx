@@ -44,7 +44,7 @@ function Request_Form() {
         serviceFee:0,
         lessEWT:0,
 
-        instruction:"",
+        instructions:"",
 
         department:"",
         sourceOfFund:"",

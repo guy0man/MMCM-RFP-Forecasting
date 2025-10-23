@@ -2,7 +2,7 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import generics, status, permissions
-from .serializers import UserSerializer, NoteSerializer, RequestForPaymentSerializer, DepartmentSerializer, SourceOfFundSerializer, TransactionTypeSerializer, TypeOfBusinessSerializer, ModeOfPaymentSerializer, TaxRegistrationSerializer, DriversMonthlySerializer, MacroMonthlySerializer, ScenarioSerializer, ScenarioDeptFactorSerializer, ScenarioTxnFactorSerializer
+from .serializers import UserSerializer, NoteSerializer, RequestForPaymentSerializer, RequestForPaymentsSerializer, DepartmentSerializer, SourceOfFundSerializer, TransactionTypeSerializer, TypeOfBusinessSerializer, ModeOfPaymentSerializer, TaxRegistrationSerializer, DriversMonthlySerializer, MacroMonthlySerializer, ScenarioSerializer, ScenarioDeptFactorSerializer, ScenarioTxnFactorSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -426,14 +426,27 @@ class RequestForPaymentListCreateView(generics.ListCreateAPIView):
     serializer_class = RequestForPaymentSerializer
     permission_classes = (AllowAny,)
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            # 👇 Print to console
+            print("❌ Validation failed:")
+            for field, msgs in serializer.errors.items():
+                print(f"   {field}: {msgs}")
+            # 👇 Return JSON response with the same details
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RequestForPaymentListView(generics.ListCreateAPIView):
+    serializer_class = RequestForPaymentsSerializer
+    permission_classes = (AllowAny,)
+
     def get_queryset(self):
         return RequestForPayment.objects.all()
     
-    def perform_create(self, serializer):
-        if serializer.is_valid():
-            serializer.save()
-        else:
-            print(serializer.errors)
 
 class DepartmentListCreateView(generics.ListCreateAPIView):
     serializer_class = DepartmentSerializer

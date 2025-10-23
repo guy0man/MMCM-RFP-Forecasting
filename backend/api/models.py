@@ -39,9 +39,9 @@ class RequestForPayment(models.Model):
 
     # payment schedule
     termsOfPayment = models.TextField()
-    pr = models.CharField(max_length=100)
-    po = models.CharField(max_length=100)
-    rr = models.CharField(max_length=100)
+    pr = models.CharField(max_length=100, null=True, blank=True)
+    po = models.CharField(max_length=100, null=True, blank=True)
+    rr = models.CharField(max_length=100, null=True, blank=True)
 
     # payee information
     tin = models.CharField(max_length=20)

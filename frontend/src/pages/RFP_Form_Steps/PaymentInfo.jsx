@@ -40,6 +40,7 @@ const schema = z.object({
   taxRegistration: z.string().min(1,"Address is required"),
   typeOfBusiness: z.string().min(1,"Address is required"),
   currency:z.string().min(1,"Currency is required"),
+  termsOfPayment:z.string().min(1,"Terms of payment is required"),
   amount: z.coerce
     .number({
       required_error: "Amount is required",
@@ -109,7 +110,7 @@ function PaymentInfo({setPage,formData,setFormData}) {
     getModesOfPayment()
     getTypesOfBusinesses()
     getTaxRegistrations()
-    const net = toNum(amount) - toNum(lessEWT) - toNum(serviceFee);
+    const net = toNum(amount) + toNum(lessEWT) + toNum(serviceFee);
     setValue("netTotal", net, { shouldValidate: true, shouldDirty: true });
   }, [amount, serviceFee, lessEWT, setValue])
 
@@ -196,7 +197,7 @@ function PaymentInfo({setPage,formData,setFormData}) {
               </Field>  
               <Field>
                 <FieldLabel>Terms of Payment</FieldLabel>
-                <Textarea placeholder="Terms of Payment"/>
+                <Textarea {...register("termsOfPayment")} placeholder="Terms of Payment" className={errors.termsOfPayment ? "border-red-500" : ""}/>
               </Field>  
               <div class='grid grid-cols-2 gap-4'>
                 <div class='flex flex-col gap-4'>
