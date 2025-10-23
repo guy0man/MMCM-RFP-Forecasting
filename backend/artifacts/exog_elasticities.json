@@ -1,32 +1,44 @@
 {
   "0.1": {
-    "intercept": 310831.38,
+    "intercept": -71366.67641752791,
     "coef": {
-      "fxRate": 0.0,
-      "inflationPct": 0.0,
-      "wageIndex": 0.0,
+      "fxRate": -4214.606501268046,
+      "inflationPct": 5156.577326268081,
+      "wageIndex": 543580.3828243057,
       "enrolled_FTE_dept": 0.0,
       "programLaunches_dept": 0.0
     }
   },
   "0.5": {
-    "intercept": 352251.5,
+    "intercept": -95114.57543212592,
     "coef": {
-      "fxRate": 0.0,
-      "inflationPct": 0.0,
-      "wageIndex": 0.0,
+      "fxRate": -4301.697964176819,
+      "inflationPct": 12377.451425896206,
+      "wageIndex": 585730.4881358725,
       "enrolled_FTE_dept": 0.0,
       "programLaunches_dept": 0.0
     }
   },
   "0.9": {
-    "intercept": 456152.64,
+    "intercept": -5777.722275626345,
     "coef": {
-      "fxRate": 0.0,
-      "inflationPct": 0.0,
-      "wageIndex": 0.0,
+      "fxRate": -18702.38278388424,
+      "inflationPct": 22517.860531133032,
+      "wageIndex": 1239713.8864469477,
       "enrolled_FTE_dept": 0.0,
       "programLaunches_dept": 0.0
     }
+  },
+  "diag": {
+    "n_rows_before_mask": 2415,
+    "n_rows_after_mask": 2415,
+    "exog_non_null_counts": {
+      "fxRate": 2415,
+      "inflationPct": 2415,
+      "wageIndex": 2415,
+      "enrolled_FTE_dept": 0,
+      "programLaunches_dept": 0
+    },
+    "exog_any_nonzero": true
   }
 }

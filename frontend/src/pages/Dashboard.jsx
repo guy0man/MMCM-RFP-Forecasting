@@ -16,7 +16,7 @@ import {
 function Dashboard() {
 
     return (
-        <div class='flex flex-col min-h-screen'>
+        <div className='flex flex-col min-h-screen'>
             <header className='flex items-center space-x-6 my-[5px] top-0 left-0 w-[95%] z-50'>
                 <i className="fa-solid fa-otter text-gray-900 text-2xl mx-[15px]"></i>
                 <NavigationMenu viewport={false} class='w-full'>
@@ -48,7 +48,7 @@ function Dashboard() {
                         </NavigationMenuItem>
                     </NavigationMenuList>
                 </NavigationMenu>
-            </div>
+            </header>
             <Outlet/>
             <footer className="border-t bg-gray-50 px-4 py-4 text-center text-sm text-gray-600">
                 © 2025 MMCM RFP Forecasting

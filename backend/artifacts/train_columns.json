@@ -1,9 +1,9 @@
 [
   "Department",
-  "month_idx",
   "fxRate",
   "inflationPct",
   "wageIndex",
+  "month_idx",
   "enrolled_FTE_dept",
   "programLaunches_dept",
   "activeProg_lab_dept",
