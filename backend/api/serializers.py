@@ -22,11 +22,25 @@ class NoteSerializer(serializers.ModelSerializer):
 class RequestForPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequestForPayment
-        fields = ['id', 'requestedBy', 'payableTo', 'description', 'dateRequested', 'dateNeeded',
+        fields = [ 'requestedBy', 'payableTo', 'description', 'dateRequested', 'dateNeeded',
                   'bankName', 'accountName', 'accountNumber', 'swiftCode', 'contactPerson', 'contactNumber', 'email',
                   'termsOfPayment', 'pr', 'po', 'rr', 'tin', 'payeeAddress',
                   'currency', 'amount', 'serviceFee', 'lessEWT', 'netTotal', 'instructions',
-                  'department', 'sourceOfFund', 'transactionType', 'typeOfBusiness', 'modeOfPayment', 'taxRegistration']
+                  'department', 'sourceOfFund', 'transactionType', 'typeOfBusiness', 'modeOfPayment', 'taxRegistration'
+        ]
+        read_only_fields = ['id', 'dateRequested', 'netTotal']
+    
+    def create(self, validated_data):
+        amt = validated_data.get('amount') or 0
+        svc = validated_data.get('serviceFee') or 0
+        ewt = validated_data.get('lessEWT') or 0
+        validated_data['netTotal'] = amt + svc - ewt
+        return super().create(validated_data)
+        
+class RequestForPaymentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RequestForPayment
+        fields = ['id', 'requestedBy', 'description', 'dateRequested','currency', 'netTotal', ]
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:

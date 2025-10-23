@@ -19,14 +19,47 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-function ConfirmDetails({setPage, formData,setFormData}) {
+function ConfirmDetails({setPage, formData}) {
 
-    const [progress, setProgress] = React.useState(75)
+    const [progress, setProgress] = useState(75)
+    const [loading, setLoading] = useState(false)
+    const navigate = useNavigate()
         
     React.useEffect(() => {
         const timer = setTimeout(() => setProgress(100), 500)
         return () => clearTimeout(timer)
     }, [])
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        // Prepare payload: ensure numbers and IDs are correct types
+        const payload = {
+            ...formData,
+            instructions: formData.instructions ?? "",       // plural
+            amount: Number(formData.amount) || 0,
+            serviceFee: Number(formData.serviceFee) || 0,
+            lessEWT: Number(formData.lessEWT) || 0,
+            // FKs must be IDs or null
+            department: formData.department ? Number(formData.department) : null,
+            sourceOfFund: formData.sourceOfFund ? Number(formData.sourceOfFund) : null,
+            transactionType: formData.transactionType ? Number(formData.transactionType) : null,
+            typeOfBusiness: formData.typeOfBusiness ? Number(formData.typeOfBusiness) : null,
+            modeOfPayment: formData.modeOfPayment ? Number(formData.modeOfPayment) : null,
+            taxRegistration: formData.taxRegistration ? Number(formData.taxRegistration) : null,
+        };
+
+        try {
+        await api.post("/api/rfp/", payload); // ensure this URL matches your urls.py
+            setPage(0);
+        } catch (error) {
+            console.error(error);
+            alert("Submit failed. Check required fields and types.");
+        } finally {
+            setLoading(false);
+        }
+    };
   
     return (
         <div class='flex flex-row justify-center items-center backdrop-blur-md bg-white/10'>
@@ -63,12 +96,8 @@ function ConfirmDetails({setPage, formData,setFormData}) {
                             >
                                 Previous
                             </Button>
-                            <Button className='w-[150px]'
-                                onClick={() => {
-                                    setPage((currPage) => currPage + 1)
-                                }}
-                            >
-                                Submit
+                            <Button className='w-[150px]' onClick={handleSubmit} disabled={loading}>
+                                {loading ? "Submitting..." : "Submit"}
                             </Button>
                         </div>
                     </CardFooter>

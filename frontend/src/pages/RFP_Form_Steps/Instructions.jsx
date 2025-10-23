@@ -46,7 +46,7 @@ function Instructions({setPage, formData,setFormData}) {
                     <CardContent>
                             <FieldGroup>
                                 <Field>
-                                    <Textarea classname='min-h-[200px]' placeholder="Enter instructions" value={formData.instruction} onChange={(event) => setFormData({...formData, instruction: event.target.value})}/>
+                                    <Textarea classname='min-h-[200px]' placeholder="Enter instructions" value={formData.instructions} onChange={(event) => setFormData({...formData, instruction: event.target.value})}/>
                                 </Field>
                             </FieldGroup>
                     </CardContent>

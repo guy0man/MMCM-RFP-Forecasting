@@ -10,6 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
+  DialogClose
 } from "@/components/ui/dialog"
 import {
   Card,
@@ -40,12 +42,12 @@ function University() {
             <div className="flex flex-col items-center h-screen w-screen">
                 <Card className="w-[60%] my-5">
                     <CardHeader>
-                        University Data
+                        <CardTitle>University Data</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center">
                         <Dialog>
-                            <DialogTrigger className='w-[60%]'>
-                                <Button className='w-full'>Monthly Data</Button>
+                            <DialogTrigger asChild>
+                                <Button className='w-[60%]'>Monthly Data</Button>
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
@@ -63,7 +65,11 @@ function University() {
                                         </Field>
                                     </FieldGroup>
                                 </FieldSet>
-
+                                <DialogFooter>
+                                    <DialogClose asChild>
+                                        <Button>Submit</Button>
+                                    </DialogClose>
+                                </DialogFooter>
                             </DialogContent>
                         </Dialog>
                     </CardContent>

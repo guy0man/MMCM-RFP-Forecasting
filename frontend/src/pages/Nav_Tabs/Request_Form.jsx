@@ -44,7 +44,7 @@ function Request_Form() {
         serviceFee:0,
         lessEWT:0,
 
-        instruction:"",
+        instructions:"",
 
         department:"",
         sourceOfFund:"",
@@ -71,7 +71,7 @@ function Request_Form() {
     }
     
     return (
-        <div class='flex flex-col justify-center h-screen w-screen w-screen backdrop-blur-md bg-white/10 p-6'>
+        <div className='flex flex-col justify-center h-screen w-screen w-screen backdrop-blur-md bg-white/10 p-6'>
             {PageDisplay()}
         </div>
     ); 

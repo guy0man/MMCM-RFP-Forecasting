@@ -59,12 +59,12 @@ function StartRequest({setPage, formData, setFormData}) {
 
 
     return (
-        <div class='flex flex-col items-center w-screen backdrop-blur-md bg-white/10 p-6'>
-            <div class='flex flex-col justify-center items-center w-[600px]'>
-                <h1 class='text-[70px] text-center font-bold text-gray-900 mb-[20px] leading-none'>Request For Payment Form</h1>
-                <p class='text-[9px] text-center font-medium text-gray-700 max-w-[700px]'>An official document used by university departments, faculty, or staff to request the release or reimbursement of funds for approved expenses. It records key details such as the payee, purpose, amount, funding source, and required authorizations to ensure that financial transactions are properly reviewed and compliant with university accounting procedures before payment is processed.</p>
+        <div className='flex flex-col items-center w-screen backdrop-blur-md bg-white/10 p-6'>
+            <div className='flex flex-col justify-center items-center w-[600px]'>
+                <h1 className='text-[70px] text-center font-bold text-gray-900 mb-[20px] leading-none'>Request For Payment Form</h1>
+                <p className='text-[9px] text-center font-medium text-gray-700 max-w-[700px]'>An official document used by university departments, faculty, or staff to request the release or reimbursement of funds for approved expenses. It records key details such as the payee, purpose, amount, funding source, and required authorizations to ensure that financial transactions are properly reviewed and compliant with university accounting procedures before payment is processed.</p>
             </div>
-            <div class='mt-[50px]'>
+            <div className='mt-[50px]'>
                 <Button 
                     className='w-[200px]'
                     variant='outline' 
